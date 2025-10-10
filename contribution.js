@@ -353,6 +353,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+const toggleBtn = document.getElementById("themeToggle");
+const defaultTheme = document.getElementById("defaultTheme");
+const halloweenTheme = document.getElementById("halloweenTheme");
+const defaultBox = document.getElementById("defaultBox");
+const halloweenBox = document.getElementById("halloweenBox");
+const body = document.getElementById("body");
+
+let isHalloween = true;
+
+// Add the toggle functionality
+if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+        isHalloween = !isHalloween;
+        
+        if (isHalloween) {
+            // Switch to Halloween theme
+            body.classList.add('halloween-theme');
+            body.classList.remove('default-theme');
+            halloweenBox.classList.remove('hidden');
+            defaultBox.classList.add('hidden');
+            halloweenTheme.classList.remove('hidden');
+            defaultTheme.classList.add('hidden');
+        } else {
+            // Switch to Default theme
+            body.classList.remove('halloween-theme');
+            body.classList.add('default-theme');
+            halloweenBox.classList.add('hidden');
+            defaultBox.classList.remove('hidden');
+            halloweenTheme.classList.add('hidden');
+            defaultTheme.classList.remove('hidden');
+        }
+    });
+}
+
 // Optional: Add keyboard navigation
 document.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowLeft') {
