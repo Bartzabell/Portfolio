@@ -48,7 +48,7 @@ a {
 .image-stroke {
   filter: drop-shadow(0 0 0px #000000) /* no shadow */
           drop-shadow(2px 0 0 #000000) /* position to the right */
-          drop-shadow(-25px 0 0 #f59e0b) /* position to the left */
+          drop-shadow(-25px 0 0 #f50b0b) /* position to the left */
           drop-shadow(0 2px 0 #000000) /* position below */
           drop-shadow(0 -2px 0 #000000); /* position above */
 }
