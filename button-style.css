@@ -1,6 +1,77 @@
 /*=============== GOOGLE FONTS ===============*/
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap");
 
+
+@font-face {
+    font-family: 'square';
+    font-weight: normal;
+    font-style: normal;
+    src: url('./fonts/upheavtt.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'pixel';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/04B_30__.TTF') format('truetype');
+}
+
+@font-face {
+    font-family: 'academy';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/AcademyFilled3D.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'doergon';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/DoergonShift.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'actionj';
+    font-weight: bolder;
+    font-style: normal;
+    src: url('./fonts/actionj.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'rockwell';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/rockwell-bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'tallfont';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/tallfont.otf') format('truetype');
+}
+
+@font-face {
+    font-family: 'christmasfont';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/PWHappyChristmas.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'christmasfontcane';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/Candcu__.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'christmasicon';
+    font-weight: bold;
+    font-style: normal;
+    src: url('./fonts/Christmas Icons.ttf') format('truetype');
+}
+
 /*=============== VARIABLES CSS ===============*/
 :root {
   /*========== Colors ==========*/
