@@ -56,7 +56,12 @@
                         <a href="Resume.pdf" download class="block p-3">
                             Resume 
                         </a>
-                    </button>
+                    </button >
+                    <a @click="document.querySelector('#tools-section').scrollIntoView({ behavior: 'smooth' })" x-data>
+                        <button class="bg-amber-500 rounded-full p-2 hover:bg-amber-300 border-2 border-black">
+                            <span class="font-inter mx-5 font-black text-2xl tracking-[.1em]">Interactive Tools</span><i></i>
+                        </button>
+                    </a>
                 </div>
             </div>
             <div class="col-span-3 lg:col-span-2 lg:pl-10">
@@ -524,6 +529,40 @@
                 <button class="absolute right-6 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all" onclick="nextSlide()">
                     &#8250;
                 </button>
+            </div>
+        </div>
+        <div id="tools-section" class="min-h-screen flex items-center justify-center p-10" style="background: url('img/cream.jpg') no-repeat center center fixed; background-size: cover;">
+            <div class="text-center">
+                <h2 class="text-6xl font-christmasfont font-black tracking-[.5em] text-red-500 text-stroke-black mb-10">
+                    INTERACTIVE TOOLS
+                </h2>
+                
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Raffle Wheel Tool -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-lg p-8 border-4 border-black shadow-xl max-w-md">
+                        <h3 class="text-3xl font-christmasfont text-green-500 text-stroke-black mb-4">
+                            Raffle Wheel
+                        </h3>
+                        <p class="text-lg text-gray-800 mb-6 leading-relaxed">
+                            Spin the wheel to randomly select winners! Perfect for giveaways, classroom activities, or any random selection needs.
+                        </p>
+                        <a href="wheel.html" class="inline-block">
+                            <button class="rounded-full bg-green-500 px-8 py-4 font-inter font-black border-2 border-black hover:bg-green-600 hover:text-white transition-all duration-300 text-xl">
+                                Launch Raffle Wheel
+                            </button>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Navigation to next section -->
+                <div class="mt-10">
+                    <button 
+                        x-data 
+                        @click="document.querySelector('#next-section').scrollIntoView({ behavior: 'smooth' })" 
+                        class="bg-red-500 rounded-full px-8 py-4 font-inter font-black border-2 border-black hover:bg-red-600 hover:text-white transition-all duration-300">
+                        Continue to Profile
+                    </button>
+                </div>
             </div>
         </div>
         <script src="contribution.js"></script>

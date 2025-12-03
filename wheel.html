@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name Roulette Wheel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            background: #3f9de0;
+            min-height: 100vh;
+        }
+
+        #wheelCanvas {
+            border-radius: 50%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .pointer {
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-top: 60px solid #006aff;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+            z-index: 10;
+        }
+
+        .wheel-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .picked-list-item {
+            font-size: 0.875rem;
+            padding: 0.5rem;
+            border-left: 3px solid #00fbff;
+        }
+    </style>
+</head>
+<body class="p-1">
+    <div class="mx-auto bg-white rounded-3xl shadow-2xl p-1">
+        <h1 class="text-5xl font-bold text-center text-blue-600 mb-8">🎡 Name Roulette Wheel</h1>
+        
+        <div class="mb-8 text-center">
+            <input type="file" id="fileInput" accept=".xlsx,.xls" 
+                   class="px-6 py-3 border-2 border-blue-500 rounded-lg cursor-pointer hover:bg-blue-50 transition">
+            <span id="nameCount" class="ml-4 text-blue-600 font-bold"></span>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="lg:w-2/3 flex flex-col items-center">
+                <div class="wheel-container mb-6">
+                    <div class="pointer"></div>
+                    <canvas id="wheelCanvas" width="600" height="600"></canvas>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button id="spinBtn" 
+                            class="px-8 py-4 text-xl font-bold bg-blue-500 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        🎲 Spin Wheel!
+                    </button>
+                    <button id="resetBtn" 
+                            class="px-8 py-4 text-xl font-bold bg-red-500 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition hidden">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1">
+                <div id="pickedSection" class="bg-sky-100 rounded-xl p-6 shadow-inner hidden">
+                    <h2 class="text-2xl font-bold text-blue-800 mb-4">📋 Picked Names</h2>
+                    <ul id="pickedList" class=" overflow-y-auto h-96"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="remainingCount" class="mt-6 text-center text-lg font-semibold text-blue-600"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const fileInput = document.getElementById('fileInput');
+        const spinBtn = document.getElementById('spinBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pickedList = document.getElementById('pickedList');
+        const pickedSection = document.getElementById('pickedSection');
+        const nameCount = document.getElementById('nameCount');
+        const remainingCount = document.getElementById('remainingCount');
+
+        let names = [];
+        let pickedNames = [];
+        let currentAngle = 0;
+        let spinning = false;
+
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788',
+            '#FF85A1', '#A8DADC', '#F1C40F', '#E74C3C', '#3498DB'
+        ];
+
+        fileInput.addEventListener('change', handleFileUpload);
+        spinBtn.addEventListener('click', spinWheel);
+        resetBtn.addEventListener('click', resetAll);
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    names = jsonData
+                        .map(row => row[0])
+                        .filter(name => name && name.toString().trim() !== '');
+                    
+                    pickedNames = [];
+                    pickedList.innerHTML = '';
+                    pickedSection.classList.add('hidden');
+                    resetBtn.classList.add('hidden');
+                    
+                    updateCounts();
+                    drawWheel();
+                } catch (error) {
+                    alert('Error reading file. Please make sure it\'s a valid Excel file.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function drawWheel() {
+            if (names.length === 0) return;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 295;
+            const sliceAngle = (2 * Math.PI) / names.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate font size based on number of names
+            let fontSize = 16;
+            let showText = true;
+            if (names.length > 50) fontSize = 10;
+            if (names.length > 100) fontSize = 8;
+            if (names.length > 120) fontSize = 6;
+            if (names.length > 200) fontSize = 5;
+            if (names.length > 400) showText = false; // Too many to show text
+
+            // Calculate border width based on number of slices
+            let borderWidth = 3;
+            if (names.length > 50) borderWidth = 2;
+            if (names.length > 150) borderWidth = 1;
+            if (names.length > 300) borderWidth = 0.5;
+
+            names.forEach((name, i) => {
+                const startAngle = currentAngle + i * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+
+                // Draw slice
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = borderWidth;
+                ctx.stroke();
+
+                // Draw text only if not too many names and slice is big enough
+                if (showText) { // Only show text if slice angle is reasonable
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(startAngle + sliceAngle / 2);
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = 'black';
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.shadowColor = 'rgba(255,255,255,0.8)';
+                    ctx.shadowBlur = 1;
+                    
+                    // Show full name without truncating
+                    let displayName = name.toString();
+                    
+                    ctx.fillText(displayName, radius - 10, fontSize / 3);
+                    ctx.restore();
+                }
+            });
+
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+        }
+
+        function spinWheel() {
+            if (names.length === 0 || spinning) return;
+
+            spinning = true;
+            spinBtn.disabled = true;
+
+            const spinDuration = 1000;
+            const spinRotations = 5 + Math.random() * 3;
+            const totalRotation = spinRotations * 2 * Math.PI;
+            const startTime = Date.now();
+            const startAngle = currentAngle;
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                
+                // Easing function for smooth deceleration
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                
+                currentAngle = startAngle + totalRotation * easeOut;
+                drawWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    selectWinner();
+                }
+            }
+
+            animate();
+        }
+
+        function selectWinner() {
+            const sliceAngle = (2 * Math.PI) / names.length;
+            const normalizedAngle = (2 * Math.PI - (currentAngle % (2 * Math.PI))) % (2 * Math.PI);
+            const winnerIndex = Math.floor(normalizedAngle / sliceAngle);
+            const winner = names[winnerIndex];
+
+            // Add to picked list
+            pickedNames.push(winner);
+            const li = document.createElement('li');
+            li.className = 'bg-white animate-pulse';
+            li.innerHTML = `<strong>#${pickedNames.length}</strong> - ${winner}`;
+            pickedList.appendChild(li);
+            
+            // Remove animation after 1 second
+            setTimeout(() => li.classList.remove('animate-pulse'), 1000);
+
+            pickedSection.classList.remove('hidden');
+            resetBtn.classList.remove('hidden');
+
+            // Remove from names array
+            names.splice(winnerIndex, 1);
+
+            setTimeout(() => {
+                spinning = false;
+                spinBtn.disabled = names.length === 0;
+                updateCounts();
+                drawWheel();
+            }, 500);
+        }
+
+        function resetAll() {
+            names = [...names, ...pickedNames];
+            pickedNames = [];
+            pickedList.innerHTML = '';
+            pickedSection.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+            currentAngle = 0;
+            updateCounts();
+            drawWheel();
+        }
+
+        function updateCounts() {
+            if (names.length > 0) {
+                nameCount.textContent = `${names.length} names loaded`;
+                remainingCount.textContent = `Remaining names: ${names.length}`;
+            } else {
+                nameCount.textContent = '';
+                remainingCount.textContent = '';
+            }
+        }
+
+        // Initial draw
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '24px Arial';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        ctx.fillText('Upload Excel file to start', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>
