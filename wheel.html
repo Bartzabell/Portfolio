@@ -6,83 +6,93 @@
     <title>Name Roulette Wheel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="button-style.css">
+    <script src="tailwind-config.js"></script>
     <style>
-        body {
-            background: #3f9de0;
-            min-height: 100vh;
+        body { background: #ffd500; min-height: 100vh; }
+        #wheelCanvas { border-radius: 50%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .pointer { width: 0; height: 0; border-left: 30px solid transparent; border-right: 30px solid transparent; border-top: 60px solid #ff0000; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); z-index: 10; }
+        .wheel-container { position: relative; display: inline-block; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
         }
-
-        #wheelCanvas {
-            border-radius: 50%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        .modal-content {
+            background: linear-gradient(135deg, #ffc800 0%, #ff8c00 100%);
+            margin: 10% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: slideDown 0.4s;
         }
-
-        .pointer {
-            width: 0;
-            height: 0;
-            border-left: 30px solid transparent;
-            border-right: 30px solid transparent;
-            border-top: 60px solid #006aff;
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
-            z-index: 10;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-
-        .wheel-container {
-            position: relative;
-            display: inline-block;
+        @keyframes slideDown {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-
-        .picked-list-item {
-            font-size: 0.875rem;
-            padding: 0.5rem;
-            border-left: 3px solid #00fbff;
+        .close-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: #ffd500;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .close-btn:hover {
+            transform: scale(1.1);
         }
     </style>
 </head>
-<body class="p-1">
-    <div class="mx-auto bg-white rounded-3xl shadow-2xl p-1">
-        <h1 class="text-5xl font-bold text-center text-blue-600 mb-8">🎡 Name Roulette Wheel</h1>
-        
-        <div class="mb-8 text-center">
-            <input type="file" id="fileInput" accept=".xlsx,.xls" 
-                   class="px-6 py-3 border-2 border-blue-500 rounded-lg cursor-pointer hover:bg-blue-50 transition">
-            <span id="nameCount" class="ml-4 text-blue-600 font-bold"></span>
+<body>
+    <div id="winnerModal" class="modal">
+        <div class="modal-content">
+            <h2 class="font-square text-3xl font-bold text-stroke-black text-white">🎉 Winner! 🎉</h2>
+            <p id="winnerName" class="text-7xl font-square text-white text-stroke-black"></p>
+            <button class="close-btn" onclick="closeModal()">Continue</button>
         </div>
-
+    </div>
+    <div class="mx-auto bg-slate-300 shadow-2xl p-1">
+        <h1 class="text-7xl font-bold font-square tracking-[1em] text-stroke-black text-center text-amber-500 mb-2">Name Roulette</h1>
         <div class="flex flex-col lg:flex-row gap-8">
             <div class="lg:w-2/3 flex flex-col items-center">
                 <div class="wheel-container mb-6">
                     <div class="pointer"></div>
                     <canvas id="wheelCanvas" width="600" height="600"></canvas>
                 </div>
-                
-                <div class="flex gap-4">
-                    <button id="spinBtn" 
-                            class="px-8 py-4 text-xl font-bold bg-blue-500 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        🎲 Spin Wheel!
-                    </button>
-                    <button id="resetBtn" 
-                            class="px-8 py-4 text-xl font-bold bg-red-500 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition hidden">
-                        🔄 Reset
-                    </button>
-                </div>
+                <button id="spinBtn" class="p-2 text-xl font-bold font-pixel bg-amber-500 text-black rounded-md border border-black shadow-lg hover:shadow-xl transform hover:scale-105 transition disabled:opacity-50">Spin the Wheel!</button>
             </div>
-
             <div class="flex-1">
-                <div id="pickedSection" class="bg-sky-100 rounded-xl p-6 shadow-inner hidden">
-                    <h2 class="text-2xl font-bold text-blue-800 mb-4">📋 Picked Names</h2>
-                    <ul id="pickedList" class=" overflow-y-auto h-96"></ul>
+                <div class="p-1 text-center">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" class="px-1 py-1 border-2 border-black bg-amber-500 rounded-lg cursor-pointer">
+                    <div id="nameCount" class="ml-4 text-black font-bold"></div>
+                </div>
+                <div id="pickedSection" class="bg-amber-100 rounded-xl p-6 shadow-inner hidden">
+                    <h2 class="text-2xl font-bold text-amber-500 mb-4">📋 Picked Names</h2>
+                    <ul id="pickedList" class="overflow-y-auto h-96"></ul>
+                </div>
+                <div class="flex justify-center pt-2">
+                    <button id="resetBtn" class="p-2 text-xl font-bold bg-red-500 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition hidden">Reset</button>
                 </div>
             </div>
         </div>
-
-        <div id="remainingCount" class="mt-6 text-center text-lg font-semibold text-blue-600"></div>
+        <div id="remainingCount" class="mt-6 text-center text-lg font-semibold text-black"></div>
     </div>
-
     <script>
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
@@ -93,113 +103,61 @@
         const pickedSection = document.getElementById('pickedSection');
         const nameCount = document.getElementById('nameCount');
         const remainingCount = document.getElementById('remainingCount');
+        let names = [], pickedNames = [], currentAngle = 0, spinning = false;
+        const colors = ['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2','#F8B739','#52B788','#FF85A1','#A8DADC','#F1C40F','#E74C3C','#3498DB'];
 
-        let names = [];
-        let pickedNames = [];
-        let currentAngle = 0;
-        let spinning = false;
-
-        const colors = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788',
-            '#FF85A1', '#A8DADC', '#F1C40F', '#E74C3C', '#3498DB'
-        ];
-
-        fileInput.addEventListener('change', handleFileUpload);
-        spinBtn.addEventListener('click', spinWheel);
-        resetBtn.addEventListener('click', resetAll);
-
-        function handleFileUpload(e) {
+        fileInput.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = event => {
                 try {
                     const data = new Uint8Array(event.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-                    
-                    names = jsonData
-                        .map(row => row[0])
-                        .filter(name => name && name.toString().trim() !== '');
-                    
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+                    names = jsonData.map(row => row[0]).filter(name => name && name.toString().trim());
                     pickedNames = [];
                     pickedList.innerHTML = '';
                     pickedSection.classList.add('hidden');
                     resetBtn.classList.add('hidden');
-                    
                     updateCounts();
                     drawWheel();
-                } catch (error) {
-                    alert('Error reading file. Please make sure it\'s a valid Excel file.');
-                }
+                } catch { alert('Error reading file. Please use a valid Excel file.'); }
             };
             reader.readAsArrayBuffer(file);
-        }
+        });
 
         function drawWheel() {
-            if (names.length === 0) return;
-
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = 295;
-            const sliceAngle = (2 * Math.PI) / names.length;
-
+            if (!names.length) return;
+            const cx = canvas.width / 2, cy = canvas.height / 2, r = 295, slice = (2 * Math.PI) / names.length;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Calculate font size based on number of names
-            let fontSize = 16;
-            let showText = true;
-            if (names.length > 50) fontSize = 10;
-            if (names.length > 100) fontSize = 8;
-            if (names.length > 120) fontSize = 6;
-            if (names.length > 200) fontSize = 5;
-            if (names.length > 400) showText = false; // Too many to show text
-
-            // Calculate border width based on number of slices
-            let borderWidth = 3;
-            if (names.length > 50) borderWidth = 2;
-            if (names.length > 150) borderWidth = 1;
-            if (names.length > 300) borderWidth = 0.5;
-
+            const fontSize = names.length > 400 ? 0 : names.length > 200 ? 5 : names.length > 120 ? 6 : names.length > 100 ? 8 : names.length > 50 ? 10 : 16;
+            const border = names.length > 300 ? 0.5 : names.length > 150 ? 1 : names.length > 50 ? 2 : 3;
             names.forEach((name, i) => {
-                const startAngle = currentAngle + i * sliceAngle;
-                const endAngle = startAngle + sliceAngle;
-
-                // Draw slice
+                const start = currentAngle + i * slice, end = start + slice;
                 ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, r, start, end);
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.fill();
                 ctx.strokeStyle = 'white';
-                ctx.lineWidth = borderWidth;
+                ctx.lineWidth = border;
                 ctx.stroke();
-
-                // Draw text only if not too many names and slice is big enough
-                if (showText) { // Only show text if slice angle is reasonable
+                if (fontSize) {
                     ctx.save();
-                    ctx.translate(centerX, centerY);
-                    ctx.rotate(startAngle + sliceAngle / 2);
+                    ctx.translate(cx, cy);
+                    ctx.rotate(start + slice / 2);
                     ctx.textAlign = 'right';
                     ctx.fillStyle = 'black';
                     ctx.font = `bold ${fontSize}px Arial`;
                     ctx.shadowColor = 'rgba(255,255,255,0.8)';
                     ctx.shadowBlur = 1;
-                    
-                    // Show full name without truncating
-                    let displayName = name.toString();
-                    
-                    ctx.fillText(displayName, radius - 10, fontSize / 3);
+                    ctx.fillText(name.toString(), r - 10, fontSize / 3);
                     ctx.restore();
                 }
             });
-
-            // Draw center circle
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.arc(cx, cy, 30, 0, 2 * Math.PI);
             ctx.fillStyle = 'white';
             ctx.fill();
             ctx.strokeStyle = '#667eea';
@@ -207,69 +165,45 @@
             ctx.stroke();
         }
 
-        function spinWheel() {
-            if (names.length === 0 || spinning) return;
-
+        spinBtn.addEventListener('click', () => {
+            if (!names.length || spinning) return;
             spinning = true;
             spinBtn.disabled = true;
-
-            const spinDuration = 1000;
-            const spinRotations = 5 + Math.random() * 3;
-            const totalRotation = spinRotations * 2 * Math.PI;
-            const startTime = Date.now();
-            const startAngle = currentAngle;
-
+            const duration = 4000, rotations = 5 + Math.random() * 3, total = rotations * 2 * Math.PI, start = Date.now(), startAngle = currentAngle;
             function animate() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / spinDuration, 1);
-                
-                // Easing function for smooth deceleration
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                
-                currentAngle = startAngle + totalRotation * easeOut;
+                const progress = Math.min((Date.now() - start) / duration, 1);
+                currentAngle = startAngle + total * (1 - Math.pow(1 - progress, 3));
                 drawWheel();
-
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    selectWinner();
-                }
+                progress < 1 ? requestAnimationFrame(animate) : selectWinner();
             }
-
             animate();
-        }
+        });
 
         function selectWinner() {
-            const sliceAngle = (2 * Math.PI) / names.length;
-            const normalizedAngle = (2 * Math.PI - (currentAngle % (2 * Math.PI))) % (2 * Math.PI);
-            const winnerIndex = Math.floor(normalizedAngle / sliceAngle);
-            const winner = names[winnerIndex];
-
-            // Add to picked list
+            const slice = (2 * Math.PI) / names.length;
+            const idx = Math.floor(((2 * Math.PI - (currentAngle % (2 * Math.PI))) % (2 * Math.PI)) / slice);
+            const winner = names[idx];
+            
+            showModal(winner);
+            
             pickedNames.push(winner);
             const li = document.createElement('li');
-            li.className = 'bg-white animate-pulse';
+            li.className = 'animate-pulse';
             li.innerHTML = `<strong>#${pickedNames.length}</strong> - ${winner}`;
             pickedList.appendChild(li);
-            
-            // Remove animation after 1 second
             setTimeout(() => li.classList.remove('animate-pulse'), 1000);
-
             pickedSection.classList.remove('hidden');
             resetBtn.classList.remove('hidden');
-
-            // Remove from names array
-            names.splice(winnerIndex, 1);
-
+            names.splice(idx, 1);
             setTimeout(() => {
                 spinning = false;
-                spinBtn.disabled = names.length === 0;
+                spinBtn.disabled = !names.length;
                 updateCounts();
                 drawWheel();
             }, 500);
         }
 
-        function resetAll() {
+        resetBtn.addEventListener('click', () => {
             names = [...names, ...pickedNames];
             pickedNames = [];
             pickedList.innerHTML = '';
@@ -278,25 +212,28 @@
             currentAngle = 0;
             updateCounts();
             drawWheel();
-        }
+        });
 
         function updateCounts() {
-            if (names.length > 0) {
-                nameCount.textContent = `${names.length} names loaded`;
-                remainingCount.textContent = `Remaining names: ${names.length}`;
-            } else {
-                nameCount.textContent = '';
-                remainingCount.textContent = '';
-            }
+            nameCount.textContent = names.length ? `${names.length} names loaded` : '';
+            remainingCount.textContent = names.length ? `Remaining names: ${names.length}` : '';
         }
 
-        // Initial draw
         ctx.fillStyle = '#f0f0f0';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.font = '24px Arial';
         ctx.fillStyle = '#999';
         ctx.textAlign = 'center';
         ctx.fillText('Upload Excel file to start', canvas.width / 2, canvas.height / 2);
+
+        function showModal(name) {
+            document.getElementById('winnerName').textContent = name;
+            document.getElementById('winnerModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('winnerModal').style.display = 'none';
+        }
     </script>
 </body>
 </html>
