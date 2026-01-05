@@ -47,72 +47,54 @@
     src: url('./fonts/tallfont.otf') format('truetype');
 }
 
-@font-face {
-    font-family: 'christmasfont';
-    font-weight: bold;
-    font-style: normal;
-    src: url('./fonts/PWHappyChristmas.ttf') format('truetype');
-}
-
-@font-face {
-    font-family: 'christmasfontcane';
-    font-weight: bold;
-    font-style: normal;
-    src: url('./fonts/Candcu__.ttf') format('truetype');
-}
-
-@font-face {
-    font-family: 'christmasicon';
-    font-weight: bold;
-    font-style: normal;
-    src: url('./fonts/Christmas Icons.ttf') format('truetype');
-}
-
-  .box-area li {
+.box-area li {
     position: absolute;
     display: block;
     list-style: none;
-    font-family: "christmasicon", sans-serif; /* custom font */
-    text-align: center;
-    line-height: 1;
-    color: #ff1100;
+    width: 25px;
+    height: 25px;
+    background: #ffd500;
     animation: animate 20s linear infinite;
     top: -150px;
-}
-
-/* Match sizes with font-size instead of box width/height */
-.box-area li:nth-child(1) {
+  }
+  .box-area li:nth-child(1) {
     left: 86%;
-    font-size: 80px;
+    width: 80px;
+    height: 80px;
     animation-delay: 7s;
-}
-.box-area li:nth-child(2) {
+  }
+  .box-area li:nth-child(2) {
     left: 12%;
-    font-size: 30px;
+    width: 30px;
+    height: 30px;
     animation-delay: 1.5s;
     animation-duration: 5s;
-}
-.box-area li:nth-child(3) {
+  }
+  .box-area li:nth-child(3) {
     left: 70%;
-    font-size: 100px;
+    width: 100px;
+    height: 100px;
     animation-delay: 5.5s;
-}
-.box-area li:nth-child(4) {
+  }
+  .box-area li:nth-child(4) {
     left: 42%;
-    font-size: 150px;
+    width: 150px;
+    height: 150px;
     animation-delay: 0s;
     animation-duration: 6s;
-}
-.box-area li:nth-child(5) {
+  }
+  .box-area li:nth-child(5) {
     left: 65%;
-    font-size: 40px;
+    width: 40px;
+    height: 40px;
     animation-delay: 7s;
-}
-.box-area li:nth-child(6) {
+  }
+  .box-area li:nth-child(6) {
     left: 15%;
-    font-size: 110px;
+    width: 110px;
+    height: 110px;
     animation-delay: 3.5s;
-}
+  }
   @keyframes animate {
     0% {
         transform: translateY(0) rotate(0deg);

@@ -18,9 +18,6 @@ tailwind.config = {
                 'actionj': ['actionj', 'sans-serif'],
                 'rockwell': ['rockwell', '  serif'],
                 'tallfont': ['tallfont', 'sans-serif'],
-                'christmasfont': ['christmasfont', 'sans-serif'],
-                'christmasfontcane': ['christmasfontcane', 'sans-serif'],
-                'christmasicon': ['christmasicon', 'sans-serif'],
             },
             screens: {
                 'mobile-custom': '375px',
